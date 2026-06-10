@@ -18,7 +18,7 @@
             console.log("Target trovato! Avvio animazione...");
             // Reset dell'opacità e avvio animazione
             el.setAttribute('animation', {
-              property: 'components.material.material.opacity',
+              property: 'material.opacity',
               from: 0,
               to: 1,
               dur: 1000,
@@ -43,9 +43,8 @@
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
     >
-      <a-assets>
-        <!-- MODIFICA QUI IL NOME DEL FILE PER LE ALTRE CASELLE (es. casella_2_img_ar.png) -->
-        <img id="overlayImage" src="./casella_1_img_ar.jpg" crossorigin="anonymous" />
+      <a-assets timeout="10000">
+        <img id="overlayImage" src="./casella_1_img_ar.jpg" />
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
