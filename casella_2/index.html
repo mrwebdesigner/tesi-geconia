@@ -3,20 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Geconia AR </title>
+    <title>Geconia AR</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    
     <script>
-      // Componente per gestire l'animazione di entrata quando il target viene rilevato
       AFRAME.registerComponent('fade-in-on-found', {
         init: function () {
           const el = this.el;
-          
-          // Ascolta l'evento del target trovato
           this.el.parentElement.addEventListener("targetFound", () => {
-            console.log("Target trovato! Avvio animazione...");
-            // Reset dell'opacità e avvio animazione
             el.setAttribute('animation', {
               property: 'material.opacity',
               from: 0,
@@ -25,8 +19,6 @@
               easing: 'easeInQuad'
             });
           });
-
-          // Opzionale: Reset dell'opacità se il target viene perso
           this.el.parentElement.addEventListener("targetLost", () => {
             el.setAttribute('material', 'opacity', 0);
           });
@@ -34,7 +26,6 @@
       });
     </script>
   </head>
-  
   <body style="margin: 0; overflow: hidden">
     <a-scene
       mindar-image="imageTargetSrc: ./targets.mind;"
@@ -44,15 +35,11 @@
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets timeout="10000">
-        <img id="overlayImage" src="./casella_2_img_ar.jpg" />
+        <img id="overlayImage" src="./immagine-comparsa.png" />
       </a-assets>
-
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Il piano parte con opacità 0 e ha il componente 'fade-in-on-found' -->
         <a-plane
-          id="foto-ar"
           src="#overlayImage"
           position="0 0 0.01"
           width="1"

@@ -3,9 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Casella 3 — MindAR</title>
+    <title>Geconia AR</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script>
+      AFRAME.registerComponent('fade-in-on-found', {
+        init: function () {
+          const el = this.el;
+          this.el.parentElement.addEventListener("targetFound", () => {
+            el.setAttribute('animation', {
+              property: 'material.opacity',
+              from: 0,
+              to: 1,
+              dur: 1000,
+              easing: 'easeInQuad'
+            });
+          });
+          this.el.parentElement.addEventListener("targetLost", () => {
+            el.setAttribute('material', 'opacity', 0);
+          });
+        }
+      });
+    </script>
   </head>
   <body style="margin: 0; overflow: hidden">
     <a-scene
@@ -16,28 +35,18 @@
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets timeout="10000">
-        <img id="targetImage" src="./casella-03.png" />
+        <img id="overlayImage" src="./immagine-comparsa.png" />
       </a-assets>
-
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
       <a-entity mindar-image-target="targetIndex: 0">
         <a-plane
-          src="#targetImage"
-          position="0 0 0"
+          src="#overlayImage"
+          position="0 0 0.01"
           width="1"
           height="0.7382"
-          rotation="0 0 0"
+          material="transparent: true; opacity: 0"
+          fade-in-on-found
         ></a-plane>
-        <a-box
-          color="#ea580c"
-          opacity="0.85"
-          position="0 0.15 0.08"
-          width="0.25"
-          height="0.25"
-          depth="0.25"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear"
-        ></a-box>
       </a-entity>
     </a-scene>
   </body>
