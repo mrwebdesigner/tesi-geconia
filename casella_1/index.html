@@ -16,28 +16,19 @@
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
-        <img id="targetImage" src="./casella-01.png" crossorigin="anonymous" />
+        <img id="overlayImage" src="./casella1_img_ar.png" crossorigin="anonymous" />
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
         <a-plane
-          src="#targetImage"
-          position="0 0 0"
+          src="#overlayImage"
+          position="0 0 0.01"
           width="1"
-          height="0.7382"
+          height="1"
           rotation="0 0 0"
         ></a-plane>
-        <a-box
-          color="#16a34a"
-          opacity="0.85"
-          position="0 0.15 0.08"
-          width="0.25"
-          height="0.25"
-          depth="0.25"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear"
-        ></a-box>
       </a-entity>
     </a-scene>
   </body>
