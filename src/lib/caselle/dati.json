@@ -1,0 +1,50 @@
+{
+	"01": {
+		"colore": "#1c75bc",
+		"mappa": "https://maps.app.goo.gl/4b21rJdFegjweskt7"
+	},
+	"02": {
+		"colore": "#1c3462",
+		"mappa": "https://maps.app.goo.gl/vbyDduv8x6RyXFRAA"
+	},
+	"03": {
+		"colore": "#a97c50",
+		"mappa": "https://maps.app.goo.gl/JvHUKS5vpv2juebX8"
+	},
+	"04": {
+		"colore": "#008847",
+		"mappa": "https://maps.app.goo.gl/evCZbMjXFhAXLxZHA"
+	},
+	"05": {
+		"colore": "#ffd300",
+		"mappa": "https://maps.app.goo.gl/UXho6syinEXveKZK6"
+	},
+	"06": {
+		"colore": "#f15a29",
+		"mappa": "https://maps.app.goo.gl/776yKe8o6sj3MB1d8"
+	},
+	"07": {
+		"colore": "#65342e",
+		"mappa": "https://maps.app.goo.gl/QpDTQBtWD2cpa54MA"
+	},
+	"08": {
+		"colore": "#009f80",
+		"mappa": "https://maps.app.goo.gl/4XFqpk7UAupZgUc99"
+	},
+	"09": {
+		"colore": "#262262",
+		"mappa": "https://maps.app.goo.gl/7xWDS2WTxzmcv6EP8"
+	},
+	"10": {
+		"colore": "#894e53",
+		"mappa": "https://maps.app.goo.gl/bDrDXk31UCMmLgA96"
+	},
+	"11": {
+		"colore": "#194795",
+		"mappa": "https://maps.app.goo.gl/34La4voLgjHmbakH8"
+	},
+	"12": {
+		"colore": "#006838",
+		"mappa": "https://maps.app.goo.gl/Kh1AXwyXM23wZZ7W8"
+	}
+}
