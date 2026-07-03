@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { tick } from 'svelte';
 	import ActionButton from '$lib/components/ActionButton.svelte';
 	import MappaDialog from '$lib/components/MappaDialog.svelte';
-	import { getAllCaselle, type Casella } from '$lib/caselle/caselle';
+	import { getAllCaselle, getCasella, type Casella } from '$lib/caselle/caselle';
 
 	const caselle = getAllCaselle();
+	const titoloColore = getCasella('01')!.colore;
 
 	let mappaDialog = $state<HTMLDialogElement | null>(null);
 	let activeMappa = $state<{ embedUrl: string; title: string } | null>(null);
@@ -29,6 +31,8 @@
 </script>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col">
+	<h1 class="px-10 pt-10 text-center font-sans text-3xl font-bold">Il gioco di Geconia</h1>
+
 	{#each caselle as casella (casella.id)}
 		<div class="flex flex-col px-10 pt-10 pb-4" style:background-color={casella.colore}>
 			<img src={casella.svgUrl} alt="Casella {casella.id}" class="block w-full" />
@@ -52,7 +56,7 @@
 				</ActionButton>
 
 				{#if casella.hasAr}
-					<ActionButton href="/{casella.id}" aria-label="Vai alla scansione AR">
+					<ActionButton href="{base}/{casella.id}/" aria-label="Vai alla scansione AR">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 24 24"

@@ -1,8 +1,13 @@
+import process from 'node:process';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+
+const basePath = (process.argv.includes('dev') ? '' : process.env.BASE_PATH ?? '') as
+	| ''
+	| `/${string}`;
 
 export default defineConfig({
 	assetsInclude: ['**/*.mind'],
@@ -14,7 +19,12 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: adapter()
+			adapter: adapter({
+				fallback: '404.html'
+			}),
+			paths: {
+				base: basePath
+			}
 		})
 	],
 	test: {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import ArViewer from '$lib/components/ArViewer.svelte';
 	import ActionButton from '$lib/components/ActionButton.svelte';
 	import type { PageData } from './$types';
@@ -10,7 +11,7 @@
 	<title>Geconia AR — Casella {data.casella.id}</title>
 </svelte:head>
 
-<ActionButton href="/" aria-label="Torna alla home" class="fixed top-4 left-4 z-20">
+<ActionButton href="{base}/" aria-label="Torna alla home" class="fixed top-4 left-4 z-20">
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
 		viewBox="0 0 24 24"
