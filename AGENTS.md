@@ -7,7 +7,7 @@ Guida per agenti che lavorano su questo repository.
 **Geconia** è un sito web per un percorso espositivo con 12 **caselle** numerate (`01`–`12`). Ogni casella ha un'illustrazione SVG; alcune espongono anche un'esperienza **AR** (realtà aumentata via fotocamera) con MindAR + A-Frame.
 
 - **Homepage** (`/`): tutte le caselle in colonna, ciascuna in un box con sfondo `colore` da `dati.json`, pulsanti mappa (tutte) e AR (solo `hasAr`).
-- **Pagine AR** (`/{id}`): solo per le caselle con asset AR completi; esperienza a schermo intero con `ActionButton` per tornare alla home.
+- **Pagine AR** (`/{id}/`): solo per le caselle con asset AR completi; esperienza a schermo intero con `ActionButton` per tornare alla home.
 
 Il contenuto editoriale vive in `src/lib/caselle/`. Il codice applicativo in `src/routes/` e `src/lib/`.
 
@@ -20,7 +20,7 @@ Il contenuto editoriale vive in `src/lib/caselle/`. Il codice applicativo in `sr
 | Framework | SvelteKit 2 + Svelte 5 (runes) |
 | Linguaggio | TypeScript |
 | Styling | Tailwind CSS v4 (`src/routes/layout.css`) |
-| Build / deploy | Vite 8 + `@sveltejs/adapter-static` (sito statico pre-renderizzato) |
+| Build / deploy | Vite 8 + `@sveltejs/adapter-static` (sito statico pre-renderizzato); pubblicazione su **GitHub Pages** via Actions |
 | AR | A-Frame 1.6.0 + MindAR 1.2.5 (script CDN, non npm) |
 | Package manager | npm |
 | Qualità | Prettier, ESLint, svelte-check, Vitest, Playwright |
@@ -33,7 +33,7 @@ Il contenuto editoriale vive in `src/lib/caselle/`. Il codice applicativo in `sr
 src/
 ├── routes/
 │   ├── +layout.svelte      # layout globale (favicon, children)
-│   ├── +layout.ts          # prerender = true (tutto il sito è statico)
+│   ├── +layout.ts          # prerender + trailingSlash (sito statico per GitHub Pages)
 │   ├── +page.svelte        # homepage: caselle in box colorati + pulsanti
 │   ├── layout.css          # entry Tailwind
 │   └── [casella]/
@@ -56,7 +56,9 @@ src/
 │
 └── app.html / app.d.ts
 
-vite.config.ts              # adapter-static, assetsInclude per *.mind
+vite.config.ts              # sveltekit(): adapter-static, paths.base, assetsInclude per *.mind
+static/.nojekyll            # evita interferenza Jekyll su GitHub Pages
+.github/workflows/deploy.yml  # build + deploy su push a main
 build/                      # output produzione (adapter-static)
 @old/                       # versione precedente HTML statico (solo riferimento)
 ```
@@ -81,7 +83,7 @@ Ogni casella è una cartella con id a due cifre (`01`, `02`, …).
 | Tipo | Criterio | Comportamento homepage |
 |------|----------|------------------------|
 | **Solo homepage** | solo `casella.svg` | Box colorato + pulsante mappa |
-| **Con AR** | `targets.mind` **e** `immagine-comparsa` presenti | Box colorato + pulsante mappa + pulsante freccia → `/{id}` |
+| **Con AR** | `targets.mind` **e** `immagine-comparsa` presenti | Box colorato + pulsante mappa + pulsante freccia → `/{id}/` |
 
 **Inventario attuale (AR):** `01`, `02`, `03`, `04`, `06`, `07`, `11`, `12`  
 **Solo SVG:** `05`, `08`, `09`, `10`
@@ -112,9 +114,37 @@ Scopre i file con `import.meta.glob` (eager, `?url`) e arricchisce con `dati.jso
 | URL | File | Note |
 |-----|------|------|
 | `/` | `+page.svelte` | Caselle in box colorati (`max-w-2xl`), pulsanti mappa/AR |
-| `/01` … `/12` | `[casella]/+page.svelte` | Solo le caselle AR sono pre-renderizzate; le altre restituiscono 404 |
+| `/01/` … `/12/` | `[casella]/+page.svelte` | Solo le caselle AR sono pre-renderizzate; le altre restituiscono 404 |
 
 `[casella]/+page.ts` esporta `entries()` da `getArCaselle()` per il prerender statico.
+
+`+layout.ts` imposta `trailingSlash: 'always'` così le pagine prerenderizzate diventano cartelle con `index.html` (es. `build/01/index.html`), compatibili con GitHub Pages.
+
+I link interni usano `base` da `$app/paths` (es. `href="{base}/{casella.id}/"`), non path assoluti dalla root del dominio.
+
+---
+
+## Deploy (GitHub Pages)
+
+Il sito è pubblicato su GitHub Pages come **project site** sotto `/tesi-geconia/`:
+
+`https://mrwebdesigner.github.io/tesi-geconia/`
+
+### Configurazione
+
+- **`vite.config.ts`**: opzioni SvelteKit passate al plugin `sveltekit()` (non esiste `svelte.config.js`).
+  - `adapter-static` con `fallback: '404.html'` (pagina 404 custom su GitHub Pages).
+  - `paths.base`: vuoto in dev (`vite dev`), valorizzato in build da `BASE_PATH`.
+- **CI** (`.github/workflows/deploy.yml`): su push a `main`, build con `BASE_PATH=/${{ github.event.repository.name }}` e deploy via `actions/deploy-pages`.
+- **`static/.nojekyll`**: copiato in `build/`; impedisce a Jekyll di processare `_app/`.
+
+### Build locale con base path di produzione
+
+```sh
+BASE_PATH=/tesi-geconia npm run build && npm run preview
+```
+
+Su GitHub: **Settings → Pages → Source: GitHub Actions**.
 
 ---
 
@@ -138,7 +168,7 @@ Alla navigazione client-side **obbligatorio** fermare MindAR, i track video, rim
 
 ### Vite
 
-`vite.config.ts` include `assetsInclude: ['**/*.mind']` perché i file `.mind` non sono asset standard.
+`vite.config.ts` include `assetsInclude: ['**/*.mind']` perché i file `.mind` non sono asset standard. Adapter e `paths.base` sono configurati nello stesso file tramite `sveltekit()`.
 
 ### Test AR
 
@@ -151,6 +181,7 @@ Richiede dispositivo con fotocamera (o emulazione). Non testabile in modo signif
 - **Svelte 5 runes** obbligatori nel progetto (`$props`, `$state`, ecc.).
 - **Tailwind** per lo styling; evitare CSS custom salvo casi speciali (es. AR viewer).
 - **Minimizzare lo scope**: riusare `caselle.ts` per dati, `ActionButton.svelte` per i pulsanti UI condivisi, non duplicare glob altrove.
+- **Link interni**: usare `base` da `$app/paths` per href verso route dell'app (il sito non è servito dalla root del dominio in produzione).
 - I file in `src/lib/caselle/*/index.html` sono riferimento storico — non aggiornarli come sorgente di verità.
 
 ---
@@ -158,12 +189,13 @@ Richiede dispositivo con fotocamera (o emulazione). Non testabile in modo signif
 ## Comandi utili
 
 ```sh
-npm run dev          # sviluppo locale
-npm run build        # build statica → build/
-npm run preview      # anteprima build
-npm run check        # typecheck Svelte + TS
-npm run lint         # prettier + eslint
-npm run test         # vitest + playwright
+npm run dev                              # sviluppo locale (base path vuoto)
+npm run build                            # build statica → build/ (senza base path)
+BASE_PATH=/tesi-geconia npm run build    # build come in CI per GitHub Pages
+npm run preview                          # anteprima build
+npm run check                            # typecheck Svelte + TS
+npm run lint                             # prettier + eslint
+npm run test                             # vitest + playwright
 ```
 
 ---
@@ -197,3 +229,4 @@ Solo su richiesta esplicita dell'utente, e **mai** se il codice è già stato sc
 - Non usare markup A-Frame diretto nel template Svelte senza gestire cleanup e `embedded`.
 - Non assumere che tutte le caselle abbiano AR: verificare `hasAr` o `getArCaselle()`.
 - Non ignorare `teardownAr` quando si tocca il ciclo di vita di `ArViewer`.
+- Non usare href assoluti dalla root (es. `href="/01"`) per navigazione interna: usare `base` da `$app/paths`.
