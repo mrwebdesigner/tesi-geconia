@@ -9,7 +9,7 @@
 	const titoloColore = getCasella('01')!.colore;
 
 	let mappaDialog = $state<HTMLDialogElement | null>(null);
-	let activeMappa = $state<{ embedUrl: string; title: string } | null>(null);
+	let activeMappa = $state<{ embedUrl: string; mapUrl: string; title: string } | null>(null);
 
 	function isMobileViewport(): boolean {
 		return window.matchMedia('(max-width: 768px)').matches;
@@ -23,6 +23,7 @@
 
 		activeMappa = {
 			embedUrl: casella.mappaEmbed,
+			mapUrl: casella.mappa,
 			title: `Mappa — Casella ${casella.id}`
 		};
 
@@ -87,6 +88,7 @@
 	<MappaDialog
 		bind:dialog={mappaDialog}
 		embedUrl={activeMappa.embedUrl}
+		mapUrl={activeMappa.mapUrl}
 		title={activeMappa.title}
 	/>
 {/if}
