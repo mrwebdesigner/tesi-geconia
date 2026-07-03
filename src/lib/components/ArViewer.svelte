@@ -23,23 +23,62 @@
 			if (!AFRAME.components['fade-in-on-found']) {
 				// @ts-expect-error AFRAME is loaded globally from CDN
 				AFRAME.registerComponent('fade-in-on-found', {
-					init: function (this: { el: Element }) {
+					schema: { dur: { type: 'number', default: 1000 } },
+					init: function (this: {
+						el: Element;
+						data: { dur: number };
+						rafId: number | null;
+					}) {
 						const el = this.el;
 						const parent = el.parentElement;
 						if (!parent) return;
 
-						parent.addEventListener('targetFound', () => {
-							el.setAttribute('animation', {
-								property: 'material.opacity',
-								from: 0,
-								to: 1,
-								dur: 1000,
-								easing: 'easeInQuad'
-							});
-						});
-						parent.addEventListener('targetLost', () => {
-							el.setAttribute('material', 'opacity', 0);
-						});
+						this.rafId = null;
+
+						parent.addEventListener('targetFound', () => this.fadeIn());
+						parent.addEventListener('targetLost', () => this.fadeOut());
+					},
+					fadeIn: function (this: {
+						el: Element;
+						data: { dur: number };
+						rafId: number | null;
+						cancelFade: () => void;
+					}) {
+						this.cancelFade();
+						const el = this.el;
+						const dur = this.data.dur;
+						const start = performance.now();
+
+						el.setAttribute('material', 'opacity', 0);
+
+						const tick = (now: number) => {
+							const t = Math.min((now - start) / dur, 1);
+							const opacity = t * t;
+							el.setAttribute('material', 'opacity', opacity);
+							if (t < 1) {
+								this.rafId = requestAnimationFrame(tick);
+							} else {
+								this.rafId = null;
+							}
+						};
+						this.rafId = requestAnimationFrame(tick);
+					},
+					fadeOut: function (this: {
+						el: Element;
+						rafId: number | null;
+						cancelFade: () => void;
+					}) {
+						this.cancelFade();
+						this.el.setAttribute('material', 'opacity', 0);
+					},
+					cancelFade: function (this: { rafId: number | null }) {
+						if (this.rafId !== null) {
+							cancelAnimationFrame(this.rafId);
+							this.rafId = null;
+						}
+					},
+					remove: function (this: { cancelFade: () => void }) {
+						this.cancelFade();
 					}
 				});
 			}
