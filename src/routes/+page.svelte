@@ -1,2 +1,17 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import { getAllCaselle } from '$lib/caselle/caselle';
+
+	const caselle = getAllCaselle();
+</script>
+
+<main class="flex flex-col">
+	{#each caselle as casella (casella.id)}
+		{#if casella.hasAr}
+			<a href="/{casella.id}" class="block w-full">
+				<img src={casella.svgUrl} alt="Casella {casella.id}" class="block w-full" />
+			</a>
+		{:else}
+			<img src={casella.svgUrl} alt="Casella {casella.id}" class="block w-full" />
+		{/if}
+	{/each}
+</main>

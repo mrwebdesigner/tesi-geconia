@@ -5,6 +5,7 @@ import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
+	assetsInclude: ['**/*.mind'],
 	plugins: [
 		tailwindcss(),
 		sveltekit({
