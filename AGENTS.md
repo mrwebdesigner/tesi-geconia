@@ -6,8 +6,8 @@ Guida per agenti che lavorano su questo repository.
 
 **Geconia** è un sito web per un percorso espositivo con 12 **caselle** numerate (`01`–`12`). Ogni casella ha un'illustrazione SVG; alcune espongono anche un'esperienza **AR** (realtà aumentata via fotocamera) con MindAR + A-Frame.
 
-- **Homepage** (`/`): tutte le caselle in colonna, una sotto l'altra.
-- **Pagine AR** (`/{id}`): solo per le caselle con asset AR completi; esperienza a schermo intero con pulsante per tornare alla home.
+- **Homepage** (`/`): tutte le caselle in colonna, ciascuna in un box con sfondo `colore` da `dati.json`, pulsanti mappa (tutte) e AR (solo `hasAr`).
+- **Pagine AR** (`/{id}`): solo per le caselle con asset AR completi; esperienza a schermo intero con `ActionButton` per tornare alla home.
 
 Il contenuto editoriale vive in `src/lib/caselle/`. Il codice applicativo in `src/routes/` e `src/lib/`.
 
@@ -34,20 +34,22 @@ src/
 ├── routes/
 │   ├── +layout.svelte      # layout globale (favicon, children)
 │   ├── +layout.ts          # prerender = true (tutto il sito è statico)
-│   ├── +page.svelte        # homepage: colonna di casella.svg
+│   ├── +page.svelte        # homepage: caselle in box colorati + pulsanti
 │   ├── layout.css          # entry Tailwind
 │   └── [casella]/
 │       ├── +page.ts        # load, entries() per prerender, 404 se no AR
-│       └── +page.svelte    # pagina AR + pulsante "← Home"
+│       └── +page.svelte    # pagina AR + ActionButton home
 │
 ├── lib/
 │   ├── caselle/
-│   │   ├── caselle.ts      # layer dati: import.meta.glob → tipo Casella
-│   │   ├── dati.json       # metadati per casella (colore, link mappa) — non ancora usato in UI
+│   │   ├── caselle.ts      # layer dati: import.meta.glob + dati.json → tipo Casella
+│   │   ├── dati.json       # metadati per casella (colore, mappa, mappaEmbed)
 │   │   ├── 01/ … 12/       # cartelle contenuto (vedi sotto)
 │   │   └── colori/         # riferimento design, non usato dal codice
 │   ├── components/
-│   │   └── ArViewer.svelte # scena MindAR (montaggio imperativo in onMount)
+│   │   ├── ActionButton.svelte  # pulsante rotondo condiviso (link o button)
+│   │   ├── ArViewer.svelte      # scena MindAR (montaggio imperativo in onMount)
+│   │   └── MappaDialog.svelte   # dialog desktop con iframe Google Maps
 │   ├── load-script.ts      # caricamento script CDN con cache
 │   ├── teardown-ar.ts      # cleanup AR alla navigazione SPA
 │   └── vitest-examples/    # boilerplate di test, ignorare per il dominio
@@ -76,10 +78,10 @@ Ogni casella è una cartella con id a due cifre (`01`, `02`, …).
 
 ### Due tipi di casella
 
-| Tipo | Criterio | Comportamento |
-|------|----------|---------------|
-| **Solo homepage** | solo `casella.svg` | Appare in homepage, non cliccabile |
-| **Con AR** | `targets.mind` **e** `immagine-comparsa` presenti | Cliccabile in homepage → pagina `/{id}` |
+| Tipo | Criterio | Comportamento homepage |
+|------|----------|------------------------|
+| **Solo homepage** | solo `casella.svg` | Box colorato + pulsante mappa |
+| **Con AR** | `targets.mind` **e** `immagine-comparsa` presenti | Box colorato + pulsante mappa + pulsante freccia → `/{id}` |
 
 **Inventario attuale (AR):** `01`, `02`, `03`, `04`, `06`, `07`, `11`, `12`  
 **Solo SVG:** `05`, `08`, `09`, `10`
@@ -88,18 +90,20 @@ Ogni casella è una cartella con id a due cifre (`01`, `02`, …).
 
 ### `dati.json`
 
-Metadati per tutte e 12 le caselle: `colore` (hex) e `mappa` (URL Google Maps). **Non ancora integrato nell'UI** — da usare per sfondi homepage, link mappa nelle pagine AR, ecc.
+Metadati per tutte e 12 le caselle: `colore` (hex sfondo homepage), `mappa` (URL Google Maps short link), `mappaEmbed` (URL iframe per il dialog desktop). Integrato in `caselle.ts` e usato dalla homepage.
+
+**Mappa in homepage:** su mobile (`max-width: 768px`) apre `mappa` in nuova scheda/app; su desktop apre `MappaDialog` con `mappaEmbed`.
 
 ### Layer dati (`src/lib/caselle/caselle.ts`)
 
-Scopre i file con `import.meta.glob` (eager, `?url`). API esposta:
+Scopre i file con `import.meta.glob` (eager, `?url`) e arricchisce con `dati.json`. API esposta:
 
 - `getAllCaselle()` — tutte, ordinate numericamente
 - `getArCaselle()` — solo con AR
 - `getCasella(id)` — lookup singolo
-- tipo `Casella`: `{ id, svgUrl, targetsUrl?, overlayUrl?, hasAr }`
+- tipo `Casella`: `{ id, svgUrl, colore, mappa, mappaEmbed, targetsUrl?, overlayUrl?, hasAr }`
 
-**Per aggiungere una nuova casella:** creare `src/lib/caselle/13/` con i file necessari. Non serve modificare il codice se rispetti le convenzioni di naming. Per abilitare AR servono entrambi `targets.mind` e `immagine-comparsa.*`.
+**Per aggiungere una nuova casella:** creare `src/lib/caselle/13/` con i file necessari e aggiungere la voce in `dati.json` (`colore`, `mappa`, `mappaEmbed`). Non serve modificare il codice se rispetti le convenzioni di naming. Per abilitare AR servono entrambi `targets.mind` e `immagine-comparsa.*`.
 
 ---
 
@@ -107,7 +111,7 @@ Scopre i file con `import.meta.glob` (eager, `?url`). API esposta:
 
 | URL | File | Note |
 |-----|------|------|
-| `/` | `+page.svelte` | Lista verticale di tutti i SVG |
+| `/` | `+page.svelte` | Caselle in box colorati (`max-w-2xl`), pulsanti mappa/AR |
 | `/01` … `/12` | `[casella]/+page.svelte` | Solo le caselle AR sono pre-renderizzate; le altre restituiscono 404 |
 
 `[casella]/+page.ts` esporta `entries()` da `getArCaselle()` per il prerender statico.
@@ -146,7 +150,7 @@ Richiede dispositivo con fotocamera (o emulazione). Non testabile in modo signif
 
 - **Svelte 5 runes** obbligatori nel progetto (`$props`, `$state`, ecc.).
 - **Tailwind** per lo styling; evitare CSS custom salvo casi speciali (es. AR viewer).
-- **Minimizzare lo scope**: riusare `caselle.ts` per dati, non duplicare glob altrove.
+- **Minimizzare lo scope**: riusare `caselle.ts` per dati, `ActionButton.svelte` per i pulsanti UI condivisi, non duplicare glob altrove.
 - I file in `src/lib/caselle/*/index.html` sono riferimento storico — non aggiornarli come sorgente di verità.
 
 ---

@@ -1,3 +1,5 @@
+import dati from './dati.json';
+
 const svgs = import.meta.glob<string>('./*/casella.svg', {
 	eager: true,
 	query: '?url',
@@ -26,6 +28,9 @@ const overlays = {
 export type Casella = {
 	id: string;
 	svgUrl: string;
+	colore: string;
+	mappa: string;
+	mappaEmbed: string;
 	targetsUrl?: string;
 	overlayUrl?: string;
 	hasAr: boolean;
@@ -58,9 +63,14 @@ function buildCaselle(): Casella[] {
 			const overlayUrl = overlays[overlayPath];
 			const hasAr = Boolean(targetsUrl && overlayUrl);
 
+			const meta = dati[id as keyof typeof dati];
+
 			return {
 				id,
 				svgUrl: svgs[svgPath],
+				colore: meta.colore,
+				mappa: meta.mappa,
+				mappaEmbed: meta.mappaEmbed,
 				targetsUrl: hasAr ? targetsUrl : undefined,
 				overlayUrl: hasAr ? overlayUrl : undefined,
 				hasAr
