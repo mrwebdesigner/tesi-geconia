@@ -135,7 +135,7 @@ Il sito è pubblicato su GitHub Pages come **project site** sotto `/tesi-geconia
 - **`vite.config.ts`**: opzioni SvelteKit passate al plugin `sveltekit()` (non esiste `svelte.config.js`).
   - `adapter-static` con `fallback: '404.html'` (pagina 404 custom su GitHub Pages).
   - `paths.base`: vuoto in dev (`vite dev`), valorizzato in build da `BASE_PATH`.
-- **CI** (`.github/workflows/deploy.yml`): su push a `main`, build con `BASE_PATH=/${{ github.event.repository.name }}` e deploy via `actions/deploy-pages`.
+- **CI** (`.github/workflows/deploy.yml`): su push a `main`, build con `BASE_PATH=/${{ github.event.repository.name }}` e deploy via `actions/deploy-pages` (Node 24, `deploy-pages@v5`).
 - **`static/.nojekyll`**: copiato in `build/`; impedisce a Jekyll di processare `_app/`.
 
 ### Build locale con base path di produzione
