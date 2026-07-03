@@ -8,3 +8,9 @@
 		'Segoe UI Symbol', 'Noto Color Emoji';
 	--default-font-family: var(--font-sans);
 }
+
+@layer base {
+	body {
+		@apply bg-taupe-100;
+	}
+}

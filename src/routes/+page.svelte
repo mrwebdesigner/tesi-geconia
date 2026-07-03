@@ -30,8 +30,13 @@
 	}
 </script>
 
-<main class="mx-auto flex w-full max-w-2xl flex-col">
-	<h1 class="px-10 pt-10 text-center font-sans text-3xl font-bold">Il gioco di Geconia</h1>
+<main class="mx-auto flex w-full max-w-2xl flex-col pb-10">
+	<h1
+		class="mb-10 px-10 pt-10 text-center font-sans text-6xl font-bold text-balance sm:text-7xl"
+		style:color={titoloColore}
+	>
+		Il gioco di Geconia
+	</h1>
 
 	{#each caselle as casella (casella.id)}
 		<div class="flex flex-col px-10 pt-10 pb-4" style:background-color={casella.colore}>
