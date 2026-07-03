@@ -1,0 +1,62 @@
+{
+	"01": {
+		"colore": "#1c75bc",
+		"mappa": "https://maps.app.goo.gl/4b21rJdFegjweskt7",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.7317909,12.1318809&hl=it&z=17&output=embed"
+	},
+	"02": {
+		"colore": "#1c3462",
+		"mappa": "https://maps.app.goo.gl/vbyDduv8x6RyXFRAA",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.7296972,12.1354061&hl=it&z=17&output=embed"
+	},
+	"03": {
+		"colore": "#a97c50",
+		"mappa": "https://maps.app.goo.gl/JvHUKS5vpv2juebX8",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.729895,12.135007&hl=it&z=17&output=embed"
+	},
+	"04": {
+		"colore": "#008847",
+		"mappa": "https://maps.app.goo.gl/evCZbMjXFhAXLxZHA",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.7349158,12.1374746&hl=it&z=17&output=embed"
+	},
+	"05": {
+		"colore": "#ffd300",
+		"mappa": "https://maps.app.goo.gl/UXho6syinEXveKZK6",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.733627,12.135849&hl=it&z=17&output=embed"
+	},
+	"06": {
+		"colore": "#f15a29",
+		"mappa": "https://maps.app.goo.gl/776yKe8o6sj3MB1d8",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.733850,12.136317&hl=it&z=17&output=embed"
+	},
+	"07": {
+		"colore": "#65342e",
+		"mappa": "https://maps.app.goo.gl/QpDTQBtWD2cpa54MA",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.734969,12.137151&hl=it&z=17&output=embed"
+	},
+	"08": {
+		"colore": "#009f80",
+		"mappa": "https://maps.app.goo.gl/4XFqpk7UAupZgUc99",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.735790,12.135996&hl=it&z=17&output=embed"
+	},
+	"09": {
+		"colore": "#262262",
+		"mappa": "https://maps.app.goo.gl/7xWDS2WTxzmcv6EP8",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.7345848,12.1377649&hl=it&z=17&output=embed"
+	},
+	"10": {
+		"colore": "#894e53",
+		"mappa": "https://maps.app.goo.gl/bDrDXk31UCMmLgA96",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.7318413,12.1451846&hl=it&z=17&output=embed"
+	},
+	"11": {
+		"colore": "#194795",
+		"mappa": "https://maps.app.goo.gl/34La4voLgjHmbakH8",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.7369443,12.1248791&hl=it&z=17&output=embed"
+	},
+	"12": {
+		"colore": "#006838",
+		"mappa": "https://maps.app.goo.gl/Kh1AXwyXM23wZZ7W8",
+		"mappaEmbed": "https://maps.google.com/maps?q=42.7265688,12.1312483&hl=it&z=17&output=embed"
+	}
+}
