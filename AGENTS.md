@@ -1,31 +1,195 @@
-## Project Configuration
+# AGENTS.md — tesi-geconia
 
-- **Language**: TypeScript
-- **Package Manager**: npm
-- **Add-ons**: prettier, eslint, vitest, playwright, tailwindcss, sveltekit-adapter, mcp
+Guida per agenti che lavorano su questo repository.
+
+## Cos'è il progetto
+
+**Geconia** è un sito web per un percorso espositivo con 12 **caselle** numerate (`01`–`12`). Ogni casella ha un'illustrazione SVG; alcune espongono anche un'esperienza **AR** (realtà aumentata via fotocamera) con MindAR + A-Frame.
+
+- **Homepage** (`/`): tutte le caselle in colonna, una sotto l'altra.
+- **Pagine AR** (`/{id}`): solo per le caselle con asset AR completi; esperienza a schermo intero con pulsante per tornare alla home.
+
+Il contenuto editoriale vive in `src/lib/caselle/`. Il codice applicativo in `src/routes/` e `src/lib/`.
 
 ---
 
-You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+## Stack tecnico
 
-## Available Svelte MCP Tools:
+| Aspetto | Scelta |
+|---------|--------|
+| Framework | SvelteKit 2 + Svelte 5 (runes) |
+| Linguaggio | TypeScript |
+| Styling | Tailwind CSS v4 (`src/routes/layout.css`) |
+| Build / deploy | Vite 8 + `@sveltejs/adapter-static` (sito statico pre-renderizzato) |
+| AR | A-Frame 1.6.0 + MindAR 1.2.5 (script CDN, non npm) |
+| Package manager | npm |
+| Qualità | Prettier, ESLint, svelte-check, Vitest, Playwright |
+
+---
+
+## Struttura del repository
+
+```
+src/
+├── routes/
+│   ├── +layout.svelte      # layout globale (favicon, children)
+│   ├── +layout.ts          # prerender = true (tutto il sito è statico)
+│   ├── +page.svelte        # homepage: colonna di casella.svg
+│   ├── layout.css          # entry Tailwind
+│   └── [casella]/
+│       ├── +page.ts        # load, entries() per prerender, 404 se no AR
+│       └── +page.svelte    # pagina AR + pulsante "← Home"
+│
+├── lib/
+│   ├── caselle/
+│   │   ├── caselle.ts      # layer dati: import.meta.glob → tipo Casella
+│   │   ├── dati.json       # metadati per casella (colore, link mappa) — non ancora usato in UI
+│   │   ├── 01/ … 12/       # cartelle contenuto (vedi sotto)
+│   │   └── colori/         # riferimento design, non usato dal codice
+│   ├── components/
+│   │   └── ArViewer.svelte # scena MindAR (montaggio imperativo in onMount)
+│   ├── load-script.ts      # caricamento script CDN con cache
+│   ├── teardown-ar.ts      # cleanup AR alla navigazione SPA
+│   └── vitest-examples/    # boilerplate di test, ignorare per il dominio
+│
+└── app.html / app.d.ts
+
+vite.config.ts              # adapter-static, assetsInclude per *.mind
+build/                      # output produzione (adapter-static)
+@old/                       # versione precedente HTML statico (solo riferimento)
+```
+
+---
+
+## Modello dati: le caselle
+
+### Cartella contenuto (`src/lib/caselle/{id}/`)
+
+Ogni casella è una cartella con id a due cifre (`01`, `02`, …).
+
+| File | Obbligatorio | Ruolo |
+|------|:---:|-------|
+| `casella.svg` | sì | Illustrazione mostrata in homepage |
+| `targets.mind` | no | Target MindAR per il riconoscimento immagine |
+| `immagine-comparsa.png` o `.jpg` | no | Overlay AR che appare sul target |
+| `index.html` | — | **Legacy** dall'implementazione precedente; la logica AR è in `ArViewer.svelte` |
+
+### Due tipi di casella
+
+| Tipo | Criterio | Comportamento |
+|------|----------|---------------|
+| **Solo homepage** | solo `casella.svg` | Appare in homepage, non cliccabile |
+| **Con AR** | `targets.mind` **e** `immagine-comparsa` presenti | Cliccabile in homepage → pagina `/{id}` |
+
+**Inventario attuale (AR):** `01`, `02`, `03`, `04`, `06`, `07`, `11`, `12`  
+**Solo SVG:** `05`, `08`, `09`, `10`
+
+`hasAr` in `caselle.ts` è `true` solo se **entrambi** gli asset AR esistono.
+
+### `dati.json`
+
+Metadati per tutte e 12 le caselle: `colore` (hex) e `mappa` (URL Google Maps). **Non ancora integrato nell'UI** — da usare per sfondi homepage, link mappa nelle pagine AR, ecc.
+
+### Layer dati (`src/lib/caselle/caselle.ts`)
+
+Scopre i file con `import.meta.glob` (eager, `?url`). API esposta:
+
+- `getAllCaselle()` — tutte, ordinate numericamente
+- `getArCaselle()` — solo con AR
+- `getCasella(id)` — lookup singolo
+- tipo `Casella`: `{ id, svgUrl, targetsUrl?, overlayUrl?, hasAr }`
+
+**Per aggiungere una nuova casella:** creare `src/lib/caselle/13/` con i file necessari. Non serve modificare il codice se rispetti le convenzioni di naming. Per abilitare AR servono entrambi `targets.mind` e `immagine-comparsa.*`.
+
+---
+
+## Routing
+
+| URL | File | Note |
+|-----|------|------|
+| `/` | `+page.svelte` | Lista verticale di tutti i SVG |
+| `/01` … `/12` | `[casella]/+page.svelte` | Solo le caselle AR sono pre-renderizzate; le altre restituiscono 404 |
+
+`[casella]/+page.ts` esporta `entries()` da `getArCaselle()` per il prerender statico.
+
+---
+
+## AR: aspetti critici
+
+L'AR **non** è un componente Svelte dichiarativo. MindAR/A-Frame usano custom element e iniettano video/canvas/overlay nel DOM.
+
+### `ArViewer.svelte`
+
+- Monta la scena in `onMount` via `innerHTML` (eslint disabilitato con commento mirato).
+- Attributo `embedded` su `<a-scene>`: tiene video e UI dentro il contenitore (necessario in SPA).
+- Contenitore `position: fixed; inset: 0` per schermo intero.
+- Script CDN: A-Frame 1.6.0, MindAR 1.2.5.
+- Componente custom `fade-in-on-found`: fade dell'overlay al `targetFound`.
+
+### Cleanup SPA (`teardown-ar.ts`)
+
+Alla navigazione client-side **obbligatorio** fermare MindAR, i track video, rimuovere overlay `.mindar-ui-*` dal `body` e distruggere la scena. Senza cleanup restano overlay di scansione e fotocamera attiva sopra il sito.
+
+`ArViewer` restituisce una funzione di cleanup da `onMount` che chiama `teardownAr(container)`.
+
+### Vite
+
+`vite.config.ts` include `assetsInclude: ['**/*.mind']` perché i file `.mind` non sono asset standard.
+
+### Test AR
+
+Richiede dispositivo con fotocamera (o emulazione). Non testabile in modo significativo in CI headless.
+
+---
+
+## Convenzioni di codice
+
+- **Svelte 5 runes** obbligatori nel progetto (`$props`, `$state`, ecc.).
+- **Tailwind** per lo styling; evitare CSS custom salvo casi speciali (es. AR viewer).
+- **Minimizzare lo scope**: riusare `caselle.ts` per dati, non duplicare glob altrove.
+- I file in `src/lib/caselle/*/index.html` sono riferimento storico — non aggiornarli come sorgente di verità.
+
+---
+
+## Comandi utili
+
+```sh
+npm run dev          # sviluppo locale
+npm run build        # build statica → build/
+npm run preview      # anteprima build
+npm run check        # typecheck Svelte + TS
+npm run lint         # prettier + eslint
+npm run test         # vitest + playwright
+```
+
+---
+
+## Svelte MCP
+
+Usa il server MCP Svelte per documentazione e validazione componenti.
 
 ### 1. list-sections
 
-Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
-When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+Primo passo per trovare sezioni di documentazione Svelte/SvelteKit rilevanti.
 
 ### 2. get-documentation
 
-Retrieves full documentation content for specific sections. Accepts single or multiple sections.
-After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
+Recupera il contenuto delle sezioni individuate. Analizza `use_cases` prima di chiamare.
 
 ### 3. svelte-autofixer
 
-Analyzes Svelte code and returns issues and suggestions.
-You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
+**Obbligatorio** prima di finalizzare qualsiasi file `.svelte`. Ripetere finché non ci sono issue o suggestion.
 
 ### 4. playground-link
 
-Generates a Svelte Playground link with the provided code.
-After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
+Solo su richiesta esplicita dell'utente, e **mai** se il codice è già stato scritto nei file del progetto.
+
+---
+
+## Cose da non fare
+
+- Non committare senza richiesta esplicita.
+- Non modificare `AGENTS.md` o il piano in `.cursor/plans/` se non richiesto.
+- Non usare markup A-Frame diretto nel template Svelte senza gestire cleanup e `embedded`.
+- Non assumere che tutte le caselle abbiano AR: verificare `hasAr` o `getArCaselle()`.
+- Non ignorare `teardownAr` quando si tocca il ciclo di vita di `ArViewer`.
