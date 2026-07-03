@@ -24,14 +24,12 @@
 				// @ts-expect-error AFRAME is loaded globally from CDN
 				AFRAME.registerComponent('fade-in-on-found', {
 					init: function (this: { el: Element }) {
-						const setAttr = (
-							this.el as unknown as { setAttribute: (...args: unknown[]) => void }
-						).setAttribute;
-						const parent = this.el.parentElement;
+						const el = this.el;
+						const parent = el.parentElement;
 						if (!parent) return;
 
 						parent.addEventListener('targetFound', () => {
-							setAttr('animation', {
+							el.setAttribute('animation', {
 								property: 'material.opacity',
 								from: 0,
 								to: 1,
@@ -40,7 +38,7 @@
 							});
 						});
 						parent.addEventListener('targetLost', () => {
-							setAttr('material', 'opacity', 0);
+							el.setAttribute('material', 'opacity', 0);
 						});
 					}
 				});
